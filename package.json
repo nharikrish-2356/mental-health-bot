@@ -1,0 +1,24 @@
+{
+  "name": "mental-health-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.43.0",
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "node-cron": "^4.2.1",
+    "openai": "^6.25.0",
+    "sentiment": "^5.0.2",
+    "sqlite3": "^5.1.7",
+    "uuid": "^13.0.0"
+  }
+}
