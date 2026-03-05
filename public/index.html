@@ -1,296 +1,243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
 
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Safe Space - Calm AI</title>
+<title>Mental Health Bot</title>
 
 <style>
 
-*{
-box-sizing:border-box;
-}
-
 body{
 margin:0;
-font-family:"Segoe UI",sans-serif;
+font-family:Arial;
+background:#ece5dd;
 height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-
-background:linear-gradient(-45deg,#fbc2eb,#a6c1ee,#fddb92,#d4fc79);
-background-size:400% 400%;
-animation:gradientFlow 20s ease infinite;
-}
-
-@keyframes gradientFlow{
-0%{background-position:0% 50%;}
-50%{background-position:100% 50%;}
-100%{background-position:0% 50%;}
-}
-
-/* APP CONTAINER */
-
-.app{
-
-width:100%;
-max-width:420px;
-height:100vh;
-
-background:rgba(255,255,255,0.85);
-backdrop-filter:blur(15px);
-
 display:flex;
 flex-direction:column;
-
-border-radius:0;
-overflow:hidden;
 }
 
 /* HEADER */
 
 .header{
-
+background:#075e54;
+color:white;
 padding:14px;
-display:flex;
-align-items:center;
-
+font-size:18px;
 font-weight:bold;
-font-size:16px;
-
-border-bottom:1px solid rgba(0,0,0,0.05);
-}
-
-.controls{
-margin-left:auto;
-display:flex;
-gap:6px;
-}
-
-.controls button{
-border:none;
-background:white;
-border-radius:50%;
-width:34px;
-height:34px;
-cursor:pointer;
 }
 
 /* CHAT AREA */
 
-.chat-area{
-
+#chat{
 flex:1;
-padding:15px;
 overflow-y:auto;
-
+padding:10px;
 display:flex;
 flex-direction:column;
-
--webkit-overflow-scrolling:touch;
 }
 
 /* MESSAGE */
 
 .message{
-
-max-width:75%;
-padding:10px 14px;
-border-radius:15px;
-margin-bottom:8px;
+max-width:70%;
+padding:8px 12px;
+margin:6px;
+border-radius:10px;
 font-size:14px;
-
-animation:fadeIn .3s ease;
+word-wrap:break-word;
 }
 
-@keyframes fadeIn{
+/* USER */
 
-from{
-opacity:0;
-transform:translateY(6px);
+.user{
+background:#dcf8c6;
+align-self:flex-end;
 }
 
-to{
-opacity:1;
-transform:translateY(0);
-}
-
-}
+/* BOT */
 
 .bot{
 background:white;
 align-self:flex-start;
 }
 
-.user{
-background:linear-gradient(135deg,#d4fc79,#96e6a1);
-align-self:flex-end;
-}
-
 /* INPUT AREA */
 
 .input-area{
-
 display:flex;
 padding:10px;
-gap:6px;
-
-border-top:1px solid rgba(0,0,0,0.05);
+background:#f0f0f0;
 }
 
 input{
-
 flex:1;
-padding:12px 16px;
-
+padding:10px;
 border-radius:20px;
-border:none;
-
+border:1px solid #ccc;
 outline:none;
-
-font-size:16px;
 }
 
-.icon-btn{
-
+button{
+margin-left:8px;
+padding:10px 16px;
 border:none;
-border-radius:50%;
-
-width:40px;
-height:40px;
-
-font-size:16px;
+background:#075e54;
+color:white;
+border-radius:20px;
 cursor:pointer;
 }
 
 /* TYPING */
 
-.typing span{
-
-animation:blink 1.4s infinite both;
-}
-
-.typing span:nth-child(2){
-animation-delay:.2s;
-}
-
-.typing span:nth-child(3){
-animation-delay:.4s;
-}
-
-@keyframes blink{
-
-0%{opacity:.2;}
-20%{opacity:1;}
-100%{opacity:.2;}
-
-}
-
-/* MOBILE FIX */
-
-@media(max-width:600px){
-
-body{
-align-items:stretch;
-}
-
-.app{
-height:100vh;
-max-width:100%;
-}
-
+.typing{
+font-style:italic;
+color:#777;
+font-size:13px;
+margin-left:6px;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="app">
-
 <div class="header">
-
-💚 Safe Space
-
-<div class="controls">
-
-<button id="voiceToggle">🔊</button>
-<button id="voiceGender">👩</button>
-<button id="clearChat">🗑</button>
-
+Mental Health Bot
 </div>
 
-</div>
-
-<div class="chat-area" id="chat"></div>
+<div id="chat"></div>
 
 <div class="input-area">
-
-<input type="text" id="messageInput" placeholder="Share your feelings..." />
-
-<button class="icon-btn" id="micBtn">🎤</button>
-<button class="icon-btn" id="sendBtn">➤</button>
-
-</div>
-
+<input id="msg" placeholder="Type a message...">
+<button onclick="send()">Send</button>
 </div>
 
 <script>
 
-const chat=document.getElementById("chat")
-const input=document.getElementById("messageInput")
-const sendBtn=document.getElementById("sendBtn")
+/* LOAD OLD CHAT */
 
-/* SEND MESSAGE */
+window.onload=function(){
 
-async function sendMessage(){
+let history=localStorage.getItem("chatHistory");
 
-if(!input.value.trim()) return
+if(history){
 
-const userText=input.value
-
-chat.innerHTML+=`<div class="message user">${userText}</div>`
-
-input.value=""
-
-chat.innerHTML+=`<div class="message bot typing">Thinking <span>.</span><span>.</span><span>.</span></div>`
-
-chat.scrollTop=chat.scrollHeight
-
-const response=await fetch("/chat",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-message:userText
-})
-
-})
-
-const data=await response.json()
-
-document.querySelector(".typing").remove()
-
-chat.innerHTML+=`<div class="message bot">${data.reply}</div>`
-
-chat.scrollTop=chat.scrollHeight
+document.getElementById("chat").innerHTML=history;
 
 }
 
-sendBtn.onclick=sendMessage
+}
 
-input.addEventListener("keypress",e=>{
-if(e.key==="Enter") sendMessage()
-})
+/* SAVE CHAT */
+
+function saveChat(){
+
+localStorage.setItem(
+"chatHistory",
+document.getElementById("chat").innerHTML
+);
+
+}
+
+/* ADD MESSAGE */
+
+function addMessage(text,type){
+
+let chat=document.getElementById("chat");
+
+let div=document.createElement("div");
+
+div.className="message "+type;
+
+div.innerText=text;
+
+chat.appendChild(div);
+
+chat.scrollTop=chat.scrollHeight;
+
+saveChat();
+
+}
+
+/* SEND MESSAGE */
+
+async function send(){
+
+let input=document.getElementById("msg");
+
+let text=input.value.trim();
+
+if(!text) return;
+
+addMessage(text,"user");
+
+input.value="";
+
+/* BOT TYPING */
+
+let chat=document.getElementById("chat");
+
+let typing=document.createElement("div");
+
+typing.className="typing";
+
+typing.id="typing";
+
+typing.innerText="Bot is typing...";
+
+chat.appendChild(typing);
+
+chat.scrollTop=chat.scrollHeight;
+
+try{
+
+let res=await fetch("/chat",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({message:text})
+
+});
+
+let data=await res.json();
+
+/* REMOVE TYPING */
+
+document.getElementById("typing").remove();
+
+addMessage(data.reply,"bot");
+
+}catch(e){
+
+document.getElementById("typing").remove();
+
+addMessage("Server error. Please try again.","bot");
+
+}
+
+}
+
+/* ENTER KEY SEND */
+
+document
+.getElementById("msg")
+.addEventListener("keypress",function(e){
+
+if(e.key==="Enter"){
+
+send();
+
+}
+
+});
 
 </script>
 
 </body>
+
 </html>
