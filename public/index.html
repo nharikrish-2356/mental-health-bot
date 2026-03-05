@@ -2,56 +2,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AI Chatbot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamaai Chat</title>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
-background:#e5ddd5;
+font-family: "Segoe UI", Arial;
+background:#111;
 }
 
-.chat-container{
+/* CHAT APP */
+
+.app{
 display:flex;
 flex-direction:column;
 height:100vh;
-max-width:600px;
+max-width:500px;
 margin:auto;
 background:#efeae2;
 }
 
+/* HEADER */
+
 .header{
 background:#075e54;
 color:white;
-padding:15px;
-font-size:20px;
-text-align:center;
+padding:12px;
+display:flex;
+align-items:center;
+gap:10px;
 }
 
-.chat-box{
+.avatar{
+width:38px;
+height:38px;
+border-radius:50%;
+background:#ddd;
+}
+
+.title{
+flex:1;
+font-weight:600;
+}
+
+.menu{
+font-size:20px;
+cursor:pointer;
+}
+
+/* CHAT AREA */
+
+.chat{
 flex:1;
 overflow-y:auto;
 padding:10px;
 display:flex;
 flex-direction:column;
+gap:6px;
+background-image:url("https://i.imgur.com/6Iej2c3.png");
 }
 
-.message{
-padding:10px 14px;
-margin:6px 0;
-border-radius:10px;
+/* MESSAGE */
+
+.msg{
 max-width:75%;
+padding:8px 10px;
+border-radius:8px;
 font-size:16px;
 line-height:1.4;
 position:relative;
-}
-
-.user{
-background:#dcf8c6;
-align-self:flex-end;
 }
 
 .bot{
@@ -59,192 +81,230 @@ background:white;
 align-self:flex-start;
 }
 
-.time{
-font-size:10px;
-color:gray;
-display:block;
-text-align:right;
-margin-top:3px;
+.user{
+background:#dcf8c6;
+align-self:flex-end;
 }
+
+/* TIME */
+
+.time{
+font-size:11px;
+color:#666;
+margin-left:6px;
+}
+
+/* MESSAGE FOOTER */
+
+.meta{
+display:flex;
+justify-content:flex-end;
+align-items:center;
+margin-top:2px;
+gap:4px;
+}
+
+/* TICKS */
+
+.ticks{
+font-size:12px;
+color:#4fc3f7;
+}
+
+/* INPUT AREA */
 
 .input-area{
 display:flex;
-padding:10px;
+align-items:center;
+padding:8px;
 background:#f0f0f0;
+gap:6px;
 }
 
-#input{
+.input{
 flex:1;
 padding:12px;
-font-size:16px;
 border-radius:20px;
-border:1px solid #ccc;
+border:none;
+font-size:16px;
 outline:none;
 }
 
-button{
-margin-left:8px;
-padding:10px 14px;
-font-size:16px;
-border:none;
-border-radius:50%;
+.send{
 background:#075e54;
 color:white;
+border:none;
+border-radius:50%;
+width:42px;
+height:42px;
+font-size:18px;
 cursor:pointer;
 }
 
-.clear-btn{
-border-radius:8px;
-padding:8px 12px;
-background:red;
+.clear{
+background:#e53935;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:6px;
+font-size:12px;
 }
+
+/* TYPING */
 
 .typing{
 font-style:italic;
-font-size:14px;
 color:gray;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="chat-container">
+<div class="app">
+
+<!-- HEADER -->
 
 <div class="header">
-AI Chatbot 🤖
-<button class="clear-btn" onclick="clearChat()">Clear</button>
+
+<div class="avatar"></div>
+
+<div class="title">
+Kamaai AI
 </div>
 
-<div id="chat" class="chat-box"></div>
+<button class="clear" onclick="clearChat()">Clear</button>
+
+<div class="menu">⋮</div>
+
+</div>
+
+<!-- CHAT -->
+
+<div id="chat" class="chat"></div>
+
+<!-- INPUT -->
 
 <div class="input-area">
-<input id="input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
-<button onclick="sendMessage()">➤</button>
+
+<input id="input" class="input" placeholder="Type a message"
+onkeypress="if(event.key==='Enter'){sendMessage()}">
+
+<button class="send" onclick="sendMessage()">➤</button>
+
 </div>
 
 </div>
 
 <script>
 
-let chat=document.getElementById("chat");
+const chat=document.getElementById("chat")
 
-chat.innerHTML=localStorage.getItem("chatHistory") || "";
+/* LOAD OLD CHAT */
 
-let memory=JSON.parse(localStorage.getItem("memory")) || {};
-
-function remember(key,value){
-memory[key]=value;
-localStorage.setItem("memory",JSON.stringify(memory));
-}
-
-function recall(key){
-return memory[key];
-}
+chat.innerHTML=localStorage.getItem("chatHistory") || ""
 
 function getTime(){
-let d=new Date();
-let h=d.getHours();
-let m=d.getMinutes();
-if(m<10){m="0"+m;}
-return h+":"+m;
-}
 
-function addMessage(text,className){
+let d=new Date()
 
-let msg=document.createElement("div");
-msg.className="message "+className;
+let h=d.getHours()
+let m=d.getMinutes()
 
-msg.innerHTML=text+"<span class='time'>"+getTime()+"</span>";
+if(m<10)m="0"+m
 
-chat.appendChild(msg);
-
-chat.scrollTop=chat.scrollHeight;
-
-localStorage.setItem("chatHistory",chat.innerHTML);
+return h+":"+m
 
 }
 
-function botTyping(){
+/* ADD MESSAGE */
 
-let typing=document.createElement("div");
-typing.className="message bot typing";
-typing.innerText="Typing...";
-chat.appendChild(typing);
+function addMessage(text,type){
 
-chat.scrollTop=chat.scrollHeight;
+let msg=document.createElement("div")
+msg.className="msg "+type
 
-return typing;
+let html=`${text}
+<div class="meta">
+<span class="time">${getTime()}</span>
+${type==="user" ? "<span class='ticks'>✓✓</span>" : ""}
+</div>
+`
+
+msg.innerHTML=html
+
+chat.appendChild(msg)
+
+chat.scrollTop=chat.scrollHeight
+
+localStorage.setItem("chatHistory",chat.innerHTML)
+
+}
+
+/* TYPING */
+
+function showTyping(){
+
+let typing=document.createElement("div")
+typing.className="msg bot typing"
+typing.innerText="Typing..."
+
+chat.appendChild(typing)
+
+chat.scrollTop=chat.scrollHeight
+
+return typing
 
 }
 
-function botReply(message){
+/* SEND MESSAGE */
 
-message=message.toLowerCase();
+async function sendMessage(){
 
-if(message.includes("my name is")){
-let name=message.split("my name is")[1].trim();
-remember("name",name);
-return "Nice to meet you "+name+" 😊";
-}
+let input=document.getElementById("input")
 
-if(message.includes("what is my name")){
-let name=recall("name");
-if(name){
-return "Your name is "+name;
-}
-return "I don't know your name yet.";
-}
+let text=input.value.trim()
 
-if(message.includes("hello")){
-return "Hello 👋 How can I help you?";
-}
+if(!text) return
 
-if(message.includes("how are you")){
-return "I'm good 😊 How are you?";
-}
+addMessage(text,"user")
 
-if(message.includes("sad")){
-return "I'm sorry you feel sad. I'm here for you ❤️";
-}
+input.value=""
 
-if(message.includes("happy")){
-return "That's great to hear! 😊";
-}
+let typing=showTyping()
 
-return "I'm still learning. Tell me more.";
-}
+try{
 
-function sendMessage(){
+let res=await fetch("/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:text})
+})
 
-let input=document.getElementById("input");
-let text=input.value.trim();
+let data=await res.json()
 
-if(text==="") return;
+typing.remove()
 
-addMessage(text,"user");
+addMessage(data.reply,"bot")
 
-input.value="";
+}catch{
 
-let typing=botTyping();
+typing.remove()
 
-setTimeout(()=>{
-
-typing.remove();
-
-let reply=botReply(text);
-
-addMessage(reply,"bot");
-
-},1200);
+addMessage("Server error","bot")
 
 }
+
+}
+
+/* CLEAR CHAT */
 
 function clearChat(){
 
-chat.innerHTML="";
-localStorage.removeItem("chatHistory");
+chat.innerHTML=""
+localStorage.removeItem("chatHistory")
 
 }
 
