@@ -1,84 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Kamaai Chat</title>
+<title>Kamaai Bot</title>
 
 <style>
 
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Arial, Helvetica, sans-serif;
-}
-
-/* BODY */
-
 body{
+margin:0;
+font-family: Arial, sans-serif;
 background:#e5ddd5;
 height:100vh;
 display:flex;
-justify-content:center;
-align-items:center;
-}
-
-/* APP */
-
-.app{
-width:100%;
-max-width:450px;
-height:100vh;
-display:flex;
 flex-direction:column;
-background:#efeae2;
 }
 
 /* HEADER */
 
-.header{
-background:#075e54;
+header{
+background:#075E54;
 color:white;
-padding:16px;
-font-size:22px;
+padding:15px;
+font-size:20px;
+text-align:center;
 font-weight:bold;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.voiceBtn{
-background:none;
-border:none;
-font-size:22px;
-color:white;
-cursor:pointer;
 }
 
 /* CHAT AREA */
 
-.chat-area{
+#chat{
 flex:1;
 overflow-y:auto;
 padding:15px;
 display:flex;
 flex-direction:column;
-gap:12px;
 }
 
 /* MESSAGE */
 
 .message{
-max-width:80%;
-padding:14px 16px;
-font-size:18px;
+max-width:75%;
+padding:12px;
+margin:6px;
+border-radius:10px;
+font-size:17px;
 line-height:1.4;
-border-radius:12px;
-word-wrap:break-word;
+position:relative;
 }
 
 /* USER */
@@ -98,166 +67,81 @@ background:white;
 /* TIME */
 
 .time{
-font-size:12px;
-color:#666;
+font-size:11px;
+color:gray;
 text-align:right;
-margin-top:4px;
+margin-top:5px;
 }
 
 /* INPUT AREA */
 
-.input-area{
-background:#f0f0f0;
-padding:10px;
+#inputArea{
 display:flex;
-gap:8px;
-align-items:center;
+padding:10px;
+background:white;
+border-top:1px solid #ccc;
 }
 
-/* INPUT */
-
-input{
+#msg{
 flex:1;
-padding:15px;
-font-size:18px;
+padding:12px;
+font-size:17px;
 border-radius:25px;
-border:none;
+border:1px solid #ccc;
 outline:none;
 }
 
-/* BUTTONS */
-
 button{
-width:48px;
-height:48px;
-border-radius:50%;
+margin-left:8px;
+padding:10px 15px;
 border:none;
-background:#075e54;
+border-radius:50px;
+font-size:16px;
+background:#25D366;
 color:white;
-font-size:20px;
 cursor:pointer;
 }
 
-/* TYPING */
+/* MOBILE TEXT SIZE */
 
-.typing{
-background:white;
-padding:14px;
-border-radius:12px;
-width:70px;
-}
+@media (max-width:600px){
 
-.typing span{
-animation:blink 1.4s infinite both;
+.message{
 font-size:18px;
 }
 
-.typing span:nth-child(2){animation-delay:.2s;}
-.typing span:nth-child(3){animation-delay:.4s;}
+#msg{
+font-size:18px;
+}
 
-@keyframes blink{
-0%{opacity:.2}
-20%{opacity:1}
-100%{opacity:.2}
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="app">
+<header>🤖 Kamaai Bot</header>
 
-<div class="header">
+<div id="chat"></div>
 
-🧠 Kamaai Bot
+<div id="inputArea">
 
-<button id="voiceToggle" class="voiceBtn">🔊</button>
+<input id="msg" placeholder="Type a message...">
 
-</div>
+<button onclick="send()">➤</button>
 
-<div id="chat" class="chat-area"></div>
-
-<div class="input-area">
-
-<input
-id="messageInput"
-placeholder="Type a message..."
->
-
-<button id="micBtn">🎤</button>
-
-<button id="sendBtn">➤</button>
-
-</div>
+<button onclick="clearChat()">🗑</button>
 
 </div>
 
 <script>
 
-/* ELEMENTS */
+/* MEMORY */
 
-const chat=document.getElementById("chat")
-const input=document.getElementById("messageInput")
-const sendBtn=document.getElementById("sendBtn")
-const micBtn=document.getElementById("micBtn")
-const voiceToggle=document.getElementById("voiceToggle")
+let memory=[]
 
-/* VOICE SETTINGS */
-
-let voiceEnabled=true
-
-function speak(text){
-
-if(!voiceEnabled) return
-
-speechSynthesis.cancel()
-
-let speech=new SpeechSynthesisUtterance(text)
-
-speech.lang="en-IN"
-speech.rate=0.95
-
-speechSynthesis.speak(speech)
-
-}
-
-voiceToggle.onclick=()=>{
-
-voiceEnabled=!voiceEnabled
-
-voiceToggle.textContent=voiceEnabled ? "🔊":"🔇"
-
-}
-
-/* LOAD OLD CHAT */
-
-function loadChat(){
-
-let saved=localStorage.getItem("chat")
-
-if(saved){
-
-chat.innerHTML=saved
-
-chat.scrollTop=chat.scrollHeight
-
-}
-
-}
-
-loadChat()
-
-function saveChat(){
-
-localStorage.setItem("chat",chat.innerHTML)
-
-}
-
-/* TIME */
-
-function getTime(){
+function time(){
 
 let now=new Date()
 
@@ -267,135 +151,116 @@ let m=now.getMinutes()
 if(m<10) m="0"+m
 
 return h+":"+m
-
 }
 
 /* ADD MESSAGE */
 
 function addMessage(text,type){
 
-chat.innerHTML+=`
+let chat=document.getElementById("chat")
 
-<div class="message ${type}">
+let div=document.createElement("div")
 
-${text}
+div.className="message "+type
 
-<div class="time">${getTime()}</div>
+div.innerHTML=text+"<div class='time'>"+time()+"</div>"
 
-</div>
-
-`
-
-chat.scrollTop=chat.scrollHeight
-
-saveChat()
-
-}
-
-/* TYPING */
-
-function showTyping(){
-
-chat.innerHTML+=`
-
-<div class="typing" id="typing">
-
-<span>.</span>
-<span>.</span>
-<span>.</span>
-
-</div>
-
-`
+chat.appendChild(div)
 
 chat.scrollTop=chat.scrollHeight
 
 }
 
-function removeTyping(){
+/* BOT BRAIN */
 
-let t=document.getElementById("typing")
+function botReply(msg){
 
-if(t) t.remove()
+msg=msg.toLowerCase()
+
+if(msg.includes("sad"))
+return "I'm here for you. Things will get better ❤️"
+
+if(msg.includes("stress"))
+return "Take a deep breath. You are stronger than you think 💪"
+
+if(msg.includes("hello"))
+return "Hello! I'm Kamaai bot. How are you today? 😊"
+
+if(msg.includes("motivate"))
+return "You can achieve anything with patience and hard work 🚀"
+
+if(msg.includes("life"))
+return "Life has ups and downs, but every day is a new chance 🌅"
+
+return "I'm listening. Tell me more 🙂"
 
 }
 
-/* SEND MESSAGE */
+/* SEND */
 
-async function sendMessage(){
+function send(){
 
-let text=input.value.trim()
+let input=document.getElementById("msg")
 
-if(!text) return
+let msg=input.value.trim()
 
-addMessage(text,"user")
+if(msg==="") return
+
+addMessage(msg,"user")
+
+memory.push(msg)
+
+let reply=botReply(msg)
+
+setTimeout(()=>{
+
+addMessage(reply,"bot")
+
+speak(reply)
+
+memory.push(reply)
+
+},500)
 
 input.value=""
 
-showTyping()
+}
 
-const res=await fetch("/chat",{
+/* ENTER KEY */
 
-method:"POST",
+document.getElementById("msg").addEventListener("keypress",function(e){
 
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-message:text
-})
+if(e.key==="Enter") send()
 
 })
 
-const data=await res.json()
+/* VOICE SPEAK */
 
-removeTyping()
+function speak(text){
 
-addMessage(data.reply,"bot")
+let speech=new SpeechSynthesisUtterance(text)
 
-speak(data.reply)
+speech.lang="en-US"
+
+speech.rate=1
+
+speech.pitch=1
+
+window.speechSynthesis.speak(speech)
 
 }
 
-/* EVENTS */
+/* DELETE CHAT */
 
-sendBtn.onclick=sendMessage
+function clearChat(){
 
-input.addEventListener("keypress",e=>{
+document.getElementById("chat").innerHTML=""
 
-if(e.key==="Enter") sendMessage()
-
-})
-
-/* VOICE INPUT */
-
-const SpeechRecognition=
-
-window.SpeechRecognition ||
-
-window.webkitSpeechRecognition
-
-if(SpeechRecognition){
-
-const recognition=new SpeechRecognition()
-
-recognition.lang="en-IN"
-
-micBtn.onclick=()=>recognition.start()
-
-recognition.onresult=e=>{
-
-input.value=e.results[0][0].transcript
-
-sendMessage()
-
-}
+memory=[]
 
 }
 
 </script>
 
 </body>
-
 </html>
