@@ -10,6 +10,9 @@ app.use(express.static("public"));
 let moodHistory = [];
 let lastEmotion = null;
 
+let conversationMemory = [];
+let userName = null;
+
 /* ---------------- EMOTION DETECTION ---------------- */
 
 function detectEmotion(message) {
@@ -46,9 +49,30 @@ function generateReply(message,emotion){
 
 const text = message.toLowerCase();
 
+/* Remember name */
+
+if(text.includes("my name is")){
+
+userName = text.replace("my name is","").trim();
+
+return `Nice to meet you ${userName} 😊 I'll remember your name.`;
+}
+
+/* Recall name */
+
+if(text.includes("what is my name") && userName){
+
+return `Your name is ${userName} 🙂`;
+}
+
 /* Greetings */
 
 if(text.match(/hi|hello|hey/)){
+
+if(userName){
+return `Hello ${userName} 🌿 How are you feeling today?`;
+}
+
 return randomPick([
 "Hello 🌿 I'm Kamaai. How are you feeling today?",
 "Hi there 💚 I'm here to listen. What's on your mind?",
@@ -86,9 +110,9 @@ return randomPick([
 
 if(emotion==="anxious"){
 return randomPick([
-"Let's pause for a moment. Take a slow breath in... and out 🌬️",
+"Let's pause for a moment. Take a slow breath in for 4 seconds... hold... and release 🌬️",
 "Anxiety can feel overwhelming, but you're safe right now.",
-"Would you like to try a quick grounding exercise?"
+"Try this grounding exercise: name 5 things you can see around you."
 ]);
 }
 
@@ -130,6 +154,12 @@ if(text.includes("overthinking")){
 return "Overthinking can drain your energy. Try focusing only on what you can control right now 🌿";
 }
 
+/* Follow-up awareness */
+
+if(lastEmotion==="sad"){
+return "Earlier you seemed sad. Would you like to talk more about it?";
+}
+
 /* Default */
 
 return "I'm here for you 🌿 Tell me more about what you're experiencing.";
@@ -143,10 +173,10 @@ return `I'm really sorry you're feeling this way. 💙
 
 You are not alone.
 
-🇮🇳 India – KIRAN Mental Health Helpline:
+🇮🇳 India – KIRAN Mental Health Helpline
 📞 1800-599-0019 (24/7)
 
-If you're in immediate danger, please contact emergency services.
+If you're in immediate danger please contact emergency services.
 
 You deserve care and support.`;
 }
@@ -161,18 +191,26 @@ if(!userMessage || userMessage.trim()===""){
 return res.json({reply:"Please type something 😊"});
 }
 
+conversationMemory.push({
+role:"user",
+message:userMessage
+});
+
 const emotion = detectEmotion(userMessage);
 
 moodHistory.push(emotion);
 lastEmotion = emotion;
-
-/* Crisis detection */
 
 if(emotion==="crisis"){
 return res.json({reply:getCrisisResponse()});
 }
 
 const reply = generateReply(userMessage,emotion);
+
+conversationMemory.push({
+role:"bot",
+message:reply
+});
 
 res.json({reply});
 
@@ -186,6 +224,29 @@ res.json({
 moods:moodHistory,
 lastEmotion:lastEmotion
 });
+
+});
+
+/* ---------------- CONVERSATION MEMORY ---------------- */
+
+app.get("/memory",(req,res)=>{
+
+res.json({
+userName,
+conversationMemory
+});
+
+});
+
+/* ---------------- RESET MEMORY ---------------- */
+
+app.get("/reset-memory",(req,res)=>{
+
+conversationMemory = [];
+moodHistory = [];
+userName = null;
+
+res.send("Memory cleared ✅");
 
 });
 
