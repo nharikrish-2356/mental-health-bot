@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kamaai Mental Health Bot</title>
+
+<title>Kamaai Chat</title>
 
 <style>
 
 *{
+box-sizing:border-box;
 margin:0;
 padding:0;
-box-sizing:border-box;
 font-family:Arial, Helvetica, sans-serif;
 }
 
 body{
-background:#ece5dd;
+background:#e5ddd5;
 height:100vh;
 display:flex;
 justify-content:center;
@@ -24,29 +26,21 @@ align-items:center;
 
 .app{
 width:100%;
-max-width:420px;
+max-width:430px;
 height:100vh;
-background:#efeae2;
 display:flex;
 flex-direction:column;
+background:#efeae2;
 }
 
 /* HEADER */
 
 .header{
-background:#075E54;
+background:#075e54;
 color:white;
-padding:12px;
-display:flex;
-align-items:center;
-font-size:18px;
+padding:14px;
+font-size:20px;
 font-weight:bold;
-}
-
-.header span{
-font-size:13px;
-margin-left:10px;
-opacity:.8;
 }
 
 /* CHAT AREA */
@@ -54,72 +48,73 @@ opacity:.8;
 .chat-area{
 flex:1;
 overflow-y:auto;
-padding:12px;
+padding:15px;
 display:flex;
 flex-direction:column;
+gap:10px;
 }
 
 /* MESSAGE */
 
 .message{
 max-width:75%;
-padding:8px 10px;
-border-radius:8px;
-margin:6px 0;
-font-size:16px;
-position:relative;
+padding:12px 14px;
+font-size:17px;
+border-radius:10px;
 word-wrap:break-word;
 }
 
-/* BOT MESSAGE */
-
-.bot{
-background:white;
-align-self:flex-start;
-}
-
-/* USER MESSAGE */
+/* USER */
 
 .user{
-background:#dcf8c6;
 align-self:flex-end;
+background:#dcf8c6;
+}
+
+/* BOT */
+
+.bot{
+align-self:flex-start;
+background:white;
 }
 
 /* TIME */
 
 .time{
-font-size:10px;
-color:#555;
+font-size:11px;
+color:#666;
 text-align:right;
-margin-top:3px;
+margin-top:4px;
 }
 
-/* INPUT AREA */
+/* INPUT BAR */
 
 .input-area{
 background:#f0f0f0;
-padding:8px;
+padding:10px;
 display:flex;
+gap:8px;
 align-items:center;
-gap:6px;
 }
 
 input{
 flex:1;
-padding:10px;
-border-radius:20px;
+padding:14px;
+font-size:17px;
+border-radius:25px;
 border:none;
-font-size:16px;
 outline:none;
 }
 
+/* BUTTONS */
+
 button{
-border:none;
-background:#075E54;
-color:white;
+width:45px;
+height:45px;
 border-radius:50%;
-width:40px;
-height:40px;
+border:none;
+background:#075e54;
+color:white;
 font-size:18px;
 cursor:pointer;
 }
@@ -128,8 +123,8 @@ cursor:pointer;
 
 .typing{
 background:white;
-padding:10px;
-border-radius:8px;
+padding:12px;
+border-radius:10px;
 width:60px;
 }
 
@@ -141,9 +136,9 @@ animation:blink 1.4s infinite both;
 .typing span:nth-child(3){animation-delay:.4s;}
 
 @keyframes blink{
-0%{opacity:.2;}
-20%{opacity:1;}
-100%{opacity:.2;}
+0%{opacity:.2}
+20%{opacity:1}
+100%{opacity:.2}
 }
 
 </style>
@@ -154,20 +149,20 @@ animation:blink 1.4s infinite both;
 <div class="app">
 
 <div class="header">
-🧠 Kamaai
-<span>online</span>
+🧠 Kamaai Bot
 </div>
 
-<div class="chat-area" id="chat"></div>
+<div id="chat" class="chat-area"></div>
 
 <div class="input-area">
 
 <input 
 id="messageInput"
-placeholder="Type a message"
-/>
+placeholder="Type a message..."
+>
 
 <button id="micBtn">🎤</button>
+
 <button id="sendBtn">➤</button>
 
 </div>
@@ -176,18 +171,18 @@ placeholder="Type a message"
 
 <script>
 
-const chat = document.getElementById("chat")
-const input = document.getElementById("messageInput")
-const sendBtn = document.getElementById("sendBtn")
-const micBtn = document.getElementById("micBtn")
+const chat=document.getElementById("chat")
+const input=document.getElementById("messageInput")
+const sendBtn=document.getElementById("sendBtn")
+const micBtn=document.getElementById("micBtn")
 
 /* LOAD OLD CHAT */
 
 function loadChat(){
-const saved = localStorage.getItem("chat")
+let saved=localStorage.getItem("chat")
 if(saved){
-chat.innerHTML = saved
-chat.scrollTop = chat.scrollHeight
+chat.innerHTML=saved
+chat.scrollTop=chat.scrollHeight
 }
 }
 
@@ -201,10 +196,10 @@ localStorage.setItem("chat",chat.innerHTML)
 
 function getTime(){
 
-let now = new Date()
+let now=new Date()
 
-let h = now.getHours()
-let m = now.getMinutes()
+let h=now.getHours()
+let m=now.getMinutes()
 
 if(m<10) m="0"+m
 
@@ -215,36 +210,38 @@ return h+":"+m
 
 function addMessage(text,type){
 
-chat.innerHTML += `
+chat.innerHTML+=`
 <div class="message ${type}">
 ${text}
 <div class="time">${getTime()}</div>
 </div>
 `
 
-chat.scrollTop = chat.scrollHeight
+chat.scrollTop=chat.scrollHeight
 
 saveChat()
+
 }
 
 /* TYPING */
 
 function showTyping(){
 
-chat.innerHTML += `
+chat.innerHTML+=`
 <div class="typing" id="typing">
-<span>.</span><span>.</span><span>.</span>
+<span>.</span>
+<span>.</span>
+<span>.</span>
 </div>
 `
 
-chat.scrollTop = chat.scrollHeight
-}
+chat.scrollTop=chat.scrollHeight
 
-/* REMOVE TYPING */
+}
 
 function removeTyping(){
 
-let t = document.getElementById("typing")
+let t=document.getElementById("typing")
 
 if(t) t.remove()
 
@@ -254,9 +251,9 @@ if(t) t.remove()
 
 async function sendMessage(){
 
-if(!input.value.trim()) return
+let text=input.value.trim()
 
-let text = input.value
+if(!text) return
 
 addMessage(text,"user")
 
@@ -264,7 +261,7 @@ input.value=""
 
 showTyping()
 
-const response = await fetch("/chat",{
+const res=await fetch("/chat",{
 
 method:"POST",
 
@@ -278,7 +275,7 @@ message:text
 
 })
 
-const data = await response.json()
+const data=await res.json()
 
 removeTyping()
 
@@ -286,33 +283,31 @@ addMessage(data.reply,"bot")
 
 }
 
-/* BUTTON EVENTS */
+/* EVENTS */
 
-sendBtn.onclick = sendMessage
+sendBtn.onclick=sendMessage
 
 input.addEventListener("keypress",e=>{
-
 if(e.key==="Enter") sendMessage()
-
 })
 
 /* VOICE INPUT */
 
-const SpeechRecognition =
+const SpeechRecognition=
 window.SpeechRecognition ||
 window.webkitSpeechRecognition
 
 if(SpeechRecognition){
 
-const recognition = new SpeechRecognition()
+const recognition=new SpeechRecognition()
 
 recognition.lang="en-IN"
 
-micBtn.onclick = ()=>recognition.start()
+micBtn.onclick=()=>recognition.start()
 
-recognition.onresult = e =>{
+recognition.onresult=e=>{
 
-input.value = e.results[0][0].transcript
+input.value=e.results[0][0].transcript
 
 sendMessage()
 
@@ -323,4 +318,5 @@ sendMessage()
 </script>
 
 </body>
+
 </html>
