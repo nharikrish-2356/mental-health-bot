@@ -48,16 +48,17 @@ border-radius:10px;
 font-size:17px;
 line-height:1.4;
 position:relative;
+cursor:pointer;
 }
 
-/* USER */
+/* USER MESSAGE */
 
 .user{
 align-self:flex-end;
 background:#dcf8c6;
 }
 
-/* BOT */
+/* BOT MESSAGE */
 
 .bot{
 align-self:flex-start;
@@ -102,7 +103,7 @@ color:white;
 cursor:pointer;
 }
 
-/* MOBILE TEXT SIZE */
+/* MOBILE */
 
 @media (max-width:600px){
 
@@ -137,8 +138,6 @@ font-size:18px;
 
 <script>
 
-/* MEMORY */
-
 let memory=[]
 
 function time(){
@@ -165,6 +164,18 @@ div.className="message "+type
 
 div.innerHTML=text+"<div class='time'>"+time()+"</div>"
 
+/* DELETE MESSAGE ON CLICK */
+
+div.onclick=function(){
+
+if(confirm("Delete this message?")){
+
+div.remove()
+
+}
+
+}
+
 chat.appendChild(div)
 
 chat.scrollTop=chat.scrollHeight
@@ -188,9 +199,6 @@ return "Hello! I'm Kamaai bot. How are you today? 😊"
 
 if(msg.includes("motivate"))
 return "You can achieve anything with patience and hard work 🚀"
-
-if(msg.includes("life"))
-return "Life has ups and downs, but every day is a new chance 🌅"
 
 return "I'm listening. Tell me more 🙂"
 
@@ -234,7 +242,7 @@ if(e.key==="Enter") send()
 
 })
 
-/* VOICE SPEAK */
+/* VOICE */
 
 function speak(text){
 
@@ -242,15 +250,11 @@ let speech=new SpeechSynthesisUtterance(text)
 
 speech.lang="en-US"
 
-speech.rate=1
-
-speech.pitch=1
-
 window.speechSynthesis.speak(speech)
 
 }
 
-/* DELETE CHAT */
+/* CLEAR ALL CHAT */
 
 function clearChat(){
 
