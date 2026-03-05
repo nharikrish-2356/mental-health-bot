@@ -8,13 +8,19 @@
 
 <style>
 
-body{
-margin:0;
-font-family: "Segoe UI", Arial;
-background:#111;
+*{
+box-sizing:border-box;
 }
 
-/* CHAT APP */
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#111;
+height:100vh;
+overflow:hidden;
+}
+
+/* APP */
 
 .app{
 display:flex;
@@ -30,27 +36,11 @@ background:#efeae2;
 .header{
 background:#075e54;
 color:white;
-padding:12px;
+padding:14px;
+font-size:18px;
 display:flex;
 align-items:center;
-gap:10px;
-}
-
-.avatar{
-width:38px;
-height:38px;
-border-radius:50%;
-background:#ddd;
-}
-
-.title{
-flex:1;
-font-weight:600;
-}
-
-.menu{
-font-size:20px;
-cursor:pointer;
+justify-content:space-between;
 }
 
 /* CHAT AREA */
@@ -58,57 +48,44 @@ cursor:pointer;
 .chat{
 flex:1;
 overflow-y:auto;
-padding:10px;
+padding:12px;
 display:flex;
 flex-direction:column;
-gap:6px;
-background-image:url("https://i.imgur.com/6Iej2c3.png");
+gap:8px;
 }
 
 /* MESSAGE */
 
 .msg{
 max-width:75%;
-padding:8px 10px;
+padding:10px 12px;
 border-radius:8px;
 font-size:16px;
 line-height:1.4;
-position:relative;
+word-wrap:break-word;
 }
+
+/* BOT */
 
 .bot{
 background:white;
 align-self:flex-start;
 }
 
+/* USER */
+
 .user{
 background:#dcf8c6;
 align-self:flex-end;
 }
 
-/* TIME */
-
-.time{
-font-size:11px;
-color:#666;
-margin-left:6px;
-}
-
-/* MESSAGE FOOTER */
+/* META */
 
 .meta{
-display:flex;
-justify-content:flex-end;
-align-items:center;
-margin-top:2px;
-gap:4px;
-}
-
-/* TICKS */
-
-.ticks{
-font-size:12px;
-color:#4fc3f7;
+font-size:11px;
+color:#666;
+margin-top:4px;
+text-align:right;
 }
 
 /* INPUT AREA */
@@ -116,19 +93,24 @@ color:#4fc3f7;
 .input-area{
 display:flex;
 align-items:center;
-padding:8px;
+padding:10px;
 background:#f0f0f0;
 gap:6px;
+border-top:1px solid #ccc;
 }
+
+/* INPUT */
 
 .input{
 flex:1;
 padding:12px;
 border-radius:20px;
-border:none;
+border:1px solid #ccc;
 font-size:16px;
 outline:none;
 }
+
+/* BUTTON */
 
 .send{
 background:#075e54;
@@ -141,6 +123,8 @@ font-size:18px;
 cursor:pointer;
 }
 
+/* CLEAR */
+
 .clear{
 background:#e53935;
 color:white;
@@ -149,8 +133,6 @@ padding:6px 10px;
 border-radius:6px;
 font-size:12px;
 }
-
-/* TYPING */
 
 .typing{
 font-style:italic;
@@ -165,31 +147,18 @@ color:gray;
 
 <div class="app">
 
-<!-- HEADER -->
-
 <div class="header">
-
-<div class="avatar"></div>
-
-<div class="title">
-Kamaai AI
-</div>
-
+<span>Kamaai AI</span>
 <button class="clear" onclick="clearChat()">Clear</button>
-
-<div class="menu">⋮</div>
-
 </div>
-
-<!-- CHAT -->
 
 <div id="chat" class="chat"></div>
 
-<!-- INPUT -->
-
 <div class="input-area">
 
-<input id="input" class="input" placeholder="Type a message"
+<input id="input"
+class="input"
+placeholder="Type a message..."
 onkeypress="if(event.key==='Enter'){sendMessage()}">
 
 <button class="send" onclick="sendMessage()">➤</button>
@@ -206,6 +175,14 @@ const chat=document.getElementById("chat")
 
 chat.innerHTML=localStorage.getItem("chatHistory") || ""
 
+scrollBottom()
+
+function scrollBottom(){
+chat.scrollTop=chat.scrollHeight
+}
+
+/* TIME */
+
 function getTime(){
 
 let d=new Date()
@@ -216,7 +193,6 @@ let m=d.getMinutes()
 if(m<10)m="0"+m
 
 return h+":"+m
-
 }
 
 /* ADD MESSAGE */
@@ -226,18 +202,14 @@ function addMessage(text,type){
 let msg=document.createElement("div")
 msg.className="msg "+type
 
-let html=`${text}
-<div class="meta">
-<span class="time">${getTime()}</span>
-${type==="user" ? "<span class='ticks'>✓✓</span>" : ""}
-</div>
+msg.innerHTML=`
+${text}
+<div class="meta">${getTime()}</div>
 `
-
-msg.innerHTML=html
 
 chat.appendChild(msg)
 
-chat.scrollTop=chat.scrollHeight
+scrollBottom()
 
 localStorage.setItem("chatHistory",chat.innerHTML)
 
@@ -253,13 +225,13 @@ typing.innerText="Typing..."
 
 chat.appendChild(typing)
 
-chat.scrollTop=chat.scrollHeight
+scrollBottom()
 
 return typing
 
 }
 
-/* SEND MESSAGE */
+/* SEND */
 
 async function sendMessage(){
 
@@ -299,7 +271,7 @@ addMessage("Server error","bot")
 
 }
 
-/* CLEAR CHAT */
+/* CLEAR */
 
 function clearChat(){
 
