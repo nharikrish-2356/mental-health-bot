@@ -1,305 +1,250 @@
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Kamaai Mental Health Bot</title>
+<title>AI Chatbot</title>
 
 <style>
 
-*{
-box-sizing:border-box;
+body{
 margin:0;
-padding:0;
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial, sans-serif;
+background:#e5ddd5;
 }
 
-/* BODY */
-
-body{
-background:#ece5dd;
-height:100vh;
+.chat-container{
 display:flex;
 flex-direction:column;
+height:100vh;
+max-width:600px;
+margin:auto;
+background:#efeae2;
 }
-
-/* HEADER */
 
 .header{
 background:#075e54;
 color:white;
-padding:18px;
-font-size:22px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+padding:15px;
+font-size:20px;
+text-align:center;
 }
 
-.controls button{
-background:none;
-border:none;
-font-size:22px;
-color:white;
-margin-left:10px;
-cursor:pointer;
-}
-
-/* CHAT AREA */
-
-#chat{
+.chat-box{
 flex:1;
 overflow-y:auto;
-padding:15px;
+padding:10px;
 display:flex;
 flex-direction:column;
 }
 
-/* MESSAGES */
-
 .message{
-max-width:80%;
-padding:14px 18px;
-margin:8px 0;
-border-radius:18px;
-font-size:20px;
-line-height:1.5;
-word-wrap:break-word;
+padding:10px 14px;
+margin:6px 0;
+border-radius:10px;
+max-width:75%;
+font-size:16px;
+line-height:1.4;
+position:relative;
 }
-
-/* USER */
 
 .user{
-align-self:flex-end;
 background:#dcf8c6;
+align-self:flex-end;
 }
-
-/* BOT */
 
 .bot{
-align-self:flex-start;
 background:white;
+align-self:flex-start;
 }
 
-/* INPUT AREA */
+.time{
+font-size:10px;
+color:gray;
+display:block;
+text-align:right;
+margin-top:3px;
+}
 
 .input-area{
 display:flex;
-padding:12px;
+padding:10px;
 background:#f0f0f0;
 }
 
-/* TEXT INPUT */
-
-#msg{
+#input{
 flex:1;
-padding:16px;
-border-radius:30px;
+padding:12px;
+font-size:16px;
+border-radius:20px;
 border:1px solid #ccc;
 outline:none;
-font-size:20px;
 }
 
-/* BUTTONS */
-
-.icon-btn{
+button{
 margin-left:8px;
+padding:10px 14px;
+font-size:16px;
 border:none;
 border-radius:50%;
-width:46px;
-height:46px;
-font-size:20px;
 background:#075e54;
 color:white;
 cursor:pointer;
 }
 
-/* TYPING */
+.clear-btn{
+border-radius:8px;
+padding:8px 12px;
+background:red;
+}
 
 .typing{
-font-size:16px;
-color:#777;
-margin:10px;
+font-style:italic;
+font-size:14px;
+color:gray;
 }
 
 </style>
-
 </head>
 
 <body>
 
+<div class="chat-container">
+
 <div class="header">
-
-<span>🧠 Kamaai Bot</span>
-
-<div class="controls">
-<button id="emojiBtn">😊</button>
-<button id="micBtn">🎤</button>
-<button id="clearChat">🗑</button>
+AI Chatbot 🤖
+<button class="clear-btn" onclick="clearChat()">Clear</button>
 </div>
 
-</div>
-
-<div id="chat"></div>
+<div id="chat" class="chat-box"></div>
 
 <div class="input-area">
-
-<input id="msg" placeholder="Share your feelings..." />
-
-<button class="icon-btn" id="sendBtn">➤</button>
+<input id="input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+<button onclick="sendMessage()">➤</button>
+</div>
 
 </div>
 
 <script>
 
-const chat=document.getElementById("chat");
-const input=document.getElementById("msg");
-const sendBtn=document.getElementById("sendBtn");
-const clearChat=document.getElementById("clearChat");
-const micBtn=document.getElementById("micBtn");
-const emojiBtn=document.getElementById("emojiBtn");
+let chat=document.getElementById("chat");
 
-/* LOAD CHAT */
+chat.innerHTML=localStorage.getItem("chatHistory") || "";
 
-window.onload=()=>{
+let memory=JSON.parse(localStorage.getItem("memory")) || {};
 
-let history=localStorage.getItem("chatHistory");
-
-if(history){
-chat.innerHTML=history;
-scrollBottom();
+function remember(key,value){
+memory[key]=value;
+localStorage.setItem("memory",JSON.stringify(memory));
 }
 
-};
+function recall(key){
+return memory[key];
+}
 
-/* SAVE CHAT */
+function getTime(){
+let d=new Date();
+let h=d.getHours();
+let m=d.getMinutes();
+if(m<10){m="0"+m;}
+return h+":"+m;
+}
 
-function saveChat(){
+function addMessage(text,className){
+
+let msg=document.createElement("div");
+msg.className="message "+className;
+
+msg.innerHTML=text+"<span class='time'>"+getTime()+"</span>";
+
+chat.appendChild(msg);
+
+chat.scrollTop=chat.scrollHeight;
 
 localStorage.setItem("chatHistory",chat.innerHTML);
 
 }
 
-/* SCROLL */
+function botTyping(){
 
-function scrollBottom(){
+let typing=document.createElement("div");
+typing.className="message bot typing";
+typing.innerText="Typing...";
+chat.appendChild(typing);
 
 chat.scrollTop=chat.scrollHeight;
 
-}
-
-/* ADD MESSAGE */
-
-function addMessage(text,type){
-
-let msg=document.createElement("div");
-msg.className="message "+type;
-msg.innerText=text;
-
-chat.appendChild(msg);
-
-scrollBottom();
-saveChat();
+return typing;
 
 }
 
-/* SEND MESSAGE */
+function botReply(message){
 
-async function sendMessage(){
+message=message.toLowerCase();
 
+if(message.includes("my name is")){
+let name=message.split("my name is")[1].trim();
+remember("name",name);
+return "Nice to meet you "+name+" 😊";
+}
+
+if(message.includes("what is my name")){
+let name=recall("name");
+if(name){
+return "Your name is "+name;
+}
+return "I don't know your name yet.";
+}
+
+if(message.includes("hello")){
+return "Hello 👋 How can I help you?";
+}
+
+if(message.includes("how are you")){
+return "I'm good 😊 How are you?";
+}
+
+if(message.includes("sad")){
+return "I'm sorry you feel sad. I'm here for you ❤️";
+}
+
+if(message.includes("happy")){
+return "That's great to hear! 😊";
+}
+
+return "I'm still learning. Tell me more.";
+}
+
+function sendMessage(){
+
+let input=document.getElementById("input");
 let text=input.value.trim();
 
-if(!text) return;
+if(text==="") return;
 
 addMessage(text,"user");
 
 input.value="";
 
-/* typing */
+let typing=botTyping();
 
-let typing=document.createElement("div");
-typing.className="typing";
-typing.id="typing";
-typing.innerText="Bot is typing...";
+setTimeout(()=>{
 
-chat.appendChild(typing);
-scrollBottom();
+typing.remove();
 
-try{
+let reply=botReply(text);
 
-let response=await fetch("/chat",{
+addMessage(reply,"bot");
 
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body:JSON.stringify({message:text})
-
-});
-
-let data=await response.json();
-
-document.getElementById("typing").remove();
-
-addMessage(data.reply,"bot");
-
-}catch{
-
-document.getElementById("typing").remove();
-
-addMessage("Server error. Try again.","bot");
+},1200);
 
 }
 
-}
-
-/* ENTER SEND */
-
-input.addEventListener("keypress",(e)=>{
-
-if(e.key==="Enter") sendMessage();
-
-});
-
-/* BUTTON SEND */
-
-sendBtn.onclick=sendMessage;
-
-/* CLEAR CHAT */
-
-clearChat.onclick=()=>{
+function clearChat(){
 
 chat.innerHTML="";
 localStorage.removeItem("chatHistory");
-
-};
-
-/* EMOJI BUTTON */
-
-emojiBtn.onclick=()=>{
-
-input.value+="😊";
-
-};
-
-/* VOICE INPUT */
-
-const SpeechRecognition=window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if(SpeechRecognition){
-
-const recognition=new SpeechRecognition();
-
-recognition.lang="en-IN";
-
-micBtn.onclick=()=> recognition.start();
-
-recognition.onresult=(e)=>{
-
-input.value=e.results[0][0].transcript;
-
-sendMessage();
-
-};
 
 }
 
@@ -307,3 +252,4 @@ sendMessage();
 
 </body>
 </html>
+```
